@@ -24,6 +24,12 @@
 <body>
 <canvas width="320" height="640" id="game"></canvas>
 <script>
+  init(options) {
+            document.body.style.visibility = '';
+            Telegram.WebApp.ready();
+            Telegram.WebApp.MainButton.setParams({
+                is_visible: false
+            });
 // https://tetris.fandom.com/wiki/Tetris_Guideline
 
 // get a random integer between the range of [min,max]
