@@ -14,40 +14,45 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden; /* Prevent scrolling */
+  }
+
+  canvas {
+    border: 1px solid white;
   }
   </style>
 </head>
 <body>
-<canvas width="750" height="585" id="game"></canvas>
+<canvas width="585" height="750" id="game"></canvas>
 <script>
 const canvas = document.getElementById('game');
 const context = canvas.getContext('2d');
 const grid = 15;
 const paddleHeight = grid * 5; // 80
-const maxPaddleY = canvas.height - grid - paddleHeight;
+const maxPaddleX = canvas.width - grid - paddleHeight; // Update maxPaddleX
 
 var paddleSpeed = 6;
 var ballSpeed = 5;
 
-const leftPaddle = {
-  // start in the middle of the game on the left side
-  x: grid * 2,
-  y: canvas.height / 2 - paddleHeight / 2,
-  width: grid,
-  height: paddleHeight,
+const bottomPaddle = { // Change leftPaddle to bottomPaddle and rightPaddle to topPaddle
+  // start at the bottom of the game in the middle
+  x: canvas.width / 2 - paddleHeight / 2,
+  y: canvas.height - grid * 2,
+  width: paddleHeight, // Change width and height
+  height: grid,
 
   // paddle velocity
-  dy: 0
+  dx: 0 // Change dy to dx
 };
-const rightPaddle = {
-  // start in the middle of the game on the right side
-  x: canvas.width - grid * 3,
-  y: canvas.height / 2 - paddleHeight / 2,
-  width: grid,
-  height: paddleHeight,
+const topPaddle = { // Change leftPaddle to bottomPaddle and rightPaddle to topPaddle
+  // start at the top of the game in the middle
+  x: canvas.width / 2 - paddleHeight / 2,
+  y: grid,
+  width: paddleHeight, // Change width and height
+  height: grid,
 
   // paddle velocity
-  dy: 0
+  dx: 0 // Change dy to dx
 };
 const ball = {
   // start in the middle of the game
@@ -79,45 +84,45 @@ function loop() {
   context.clearRect(0,0,canvas.width,canvas.height);
 
   // move paddles by their velocity
-  leftPaddle.y += leftPaddle.dy;
-  rightPaddle.y += rightPaddle.dy;
+  bottomPaddle.x += bottomPaddle.dx; // Change y to x
+  topPaddle.x += topPaddle.dx; // Change y to x
 
   // prevent paddles from going through walls
-  if (leftPaddle.y < grid) {
-    leftPaddle.y = grid;
+  if (bottomPaddle.x < grid) { // Change y to x
+    bottomPaddle.x = grid; // Change y to x
   }
-  else if (leftPaddle.y > maxPaddleY) {
-    leftPaddle.y = maxPaddleY;
+  else if (bottomPaddle.x > maxPaddleX) { // Change y to x
+    bottomPaddle.x = maxPaddleX; // Change y to x
   }
 
-  if (rightPaddle.y < grid) {
-    rightPaddle.y = grid;
+  if (topPaddle.x < grid) { // Change y to x
+    topPaddle.x = grid; // Change y to x
   }
-  else if (rightPaddle.y > maxPaddleY) {
-    rightPaddle.y = maxPaddleY;
+  else if (topPaddle.x > maxPaddleX) { // Change y to x
+    topPaddle.x = maxPaddleX; // Change y to x
   }
 
   // draw paddles
   context.fillStyle = 'white';
-  context.fillRect(leftPaddle.x, leftPaddle.y, leftPaddle.width, leftPaddle.height);
-  context.fillRect(rightPaddle.x, rightPaddle.y, rightPaddle.width, rightPaddle.height);
+  context.fillRect(bottomPaddle.x, bottomPaddle.y, bottomPaddle.width, bottomPaddle.height); // Change y to x
+  context.fillRect(topPaddle.x, topPaddle.y, topPaddle.width, topPaddle.height); // Change y to x
 
   // move ball by its velocity
   ball.x += ball.dx;
   ball.y += ball.dy;
 
   // prevent ball from going through walls by changing its velocity
-  if (ball.y < grid) {
-    ball.y = grid;
-    ball.dy *= -1;
+  if (ball.x < grid) {
+    ball.x = grid;
+    ball.dx *= -1;
   }
-  else if (ball.y + grid > canvas.height - grid) {
-    ball.y = canvas.height - grid * 2;
-    ball.dy *= -1;
+  else if (ball.x + grid > canvas.width - grid) {
+    ball.x = canvas.width - grid * 2;
+    ball.dx *= -1;
   }
 
   // reset ball if it goes past paddle (but only if we haven't already done so)
-  if ( (ball.x < 0 || ball.x > canvas.width) && !ball.resetting) {
+  if ((ball.y < 0 || ball.y > canvas.height) && !ball.resetting) { // Change x to y and canvas.width to canvas.height
     ball.resetting = true;
 
     // give some time for the player to recover before launching the ball again
@@ -128,20 +133,20 @@ function loop() {
     }, 400);
   }
 
-  // check to see if ball collides with paddle. if they do change x velocity
-  if (collides(ball, leftPaddle)) {
-    ball.dx *= -1;
+  // check to see if ball collides with paddle. if they do change y velocity
+  if (collides(ball, topPaddle)) { // Change leftPaddle to topPaddle and rightPaddle to bottomPaddle
+    ball.dy *= -1; // Change dx to dy
 
     // move ball next to the paddle otherwise the collision will happen again
     // in the next frame
-    ball.x = leftPaddle.x + leftPaddle.width;
+    ball.y = topPaddle.y + topPaddle.height; // Change leftPaddle to topPaddle
   }
-  else if (collides(ball, rightPaddle)) {
-    ball.dx *= -1;
+  else if (collides(ball, bottomPaddle)) { // Change leftPaddle to topPaddle and rightPaddle to bottomPaddle
+    ball.dy *= -1; // Change dx to dy
 
     // move ball next to the paddle otherwise the collision will happen again
     // in the next frame
-    ball.x = rightPaddle.x - ball.width;
+    ball.y = bottomPaddle.y - ball.height; // Change leftPaddle to topPaddle and rightPaddle to bottomPaddle
   }
 
   // draw ball
@@ -153,42 +158,66 @@ function loop() {
   context.fillRect(0, canvas.height - grid, canvas.width, canvas.height);
 
   // draw dotted line down the middle
-  for (let i = grid; i < canvas.height - grid; i += grid * 2) {
-    context.fillRect(canvas.width / 2 - grid / 2, i, grid, grid);
+  for (let i = grid; i < canvas.width - grid; i += grid * 2) {
+    context.fillRect(i, canvas.height / 2 - grid / 2, grid, grid); // Swap x and y coordinates
   }
 }
 
-// listen to keyboard events to move the paddles
-document.addEventListener('keydown', function(e) {
+// Add swipe controls
+let touchStartX = 0;
+let touchStartY = 0;
 
-  // up arrow key
-  if (e.which === 38) {
-    rightPaddle.dy = -paddleSpeed;
-  }
-  // down arrow key
-  else if (e.which === 40) {
-    rightPaddle.dy = paddleSpeed;
-  }
+document.addEventListener('touchstart', function(e) {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+});
 
-  // w key
-  if (e.which === 87) {
-    leftPaddle.dy = -paddleSpeed;
-  }
-  // a key
-  else if (e.which === 83) {
-    leftPaddle.dy = paddleSpeed;
+document.addEventListener('touchend', function(e) {
+  const touchEndX = e.changedTouches[0].clientX;
+  const touchEndY = e.changedTouches[0].clientY;
+  
+  const dx = touchEndX - touchStartX;
+  const dy = touchEndY - touchStartY;
+
+  if (Math.abs(dx) > Math.abs(dy)) {
+    if (dx > 0) {
+      moveRight();
+    } else {
+      moveLeft();
+    }
+  } else {
+    if (dy > 0) {
+      moveDown();
+    } else {
+      moveUp();
+    }
   }
 });
 
-// listen to keyboard events to stop the paddle if key is released
-document.addEventListener('keyup', function(e) {
-  if (e.which === 38 || e.which === 40) {
-    rightPaddle.dy = 0;
-  }
+// Function to move paddle left
+function moveLeft() {
+  bottomPaddle.dx = -paddleSpeed; // Change dy to dx
+}
 
-  if (e.which === 83 || e.which === 87) {
-    leftPaddle.dy = 0;
-  }
+// Function to move paddle right
+function moveRight() {
+  bottomPaddle.dx = paddleSpeed; // Change dy to dx
+}
+
+// Function to move paddle up
+function moveUp() {
+  bottomPaddle.dy = -paddleSpeed; // Add new function for moving up
+}
+
+// Function to move paddle down
+function moveDown() {
+  bottomPaddle.dy = paddleSpeed; // Add new function for moving down
+}
+
+// listen to touch events to stop the paddle if touch is released
+document.addEventListener('touchend', function(e) {
+  bottomPaddle.dx = 0; // Change dy to dx
+  bottomPaddle.dy = 0; // Add new line to stop movement on touch end
 });
 
 // start the game
