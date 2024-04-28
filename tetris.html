@@ -299,6 +299,8 @@ document.addEventListener('touchend', function(e) {
   } else {
     if (dy > 0) {
       moveDown();
+    } else {
+      rotateTetromino();
     }
   }
 });
@@ -331,6 +333,15 @@ function moveDown() {
     return;
   }
   tetromino.row = row;
+}
+
+// Function to rotate tetromino
+function rotateTetromino() {
+  if (gameOver) return;
+  const matrix = rotate(tetromino.matrix);
+  if (isValidMove(matrix, tetromino.row, tetromino.col)) {
+    tetromino.matrix = matrix;
+  }
 }
 
 document.addEventListener('keydown', function(e) {
